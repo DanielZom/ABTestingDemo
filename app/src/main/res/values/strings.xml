@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ABTestingDemo</string>
     <string name="welcome">Hello World!</string>
+    <string name="hello">Hello</string>
 </resources>

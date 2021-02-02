@@ -6,12 +6,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.iid.InstanceIdResult
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 
 @Suppress("PrivatePropertyName")
@@ -19,6 +21,7 @@ class MainActivity : AppCompatActivity() {
 
     private val REMOTE_CONFIG_LOG_TAG = "REMOTE_CONFIG_LOG_TAG"
     private val remoteConfig: FirebaseRemoteConfig by lazy { FirebaseRemoteConfig.getInstance() }
+    private val analytics: FirebaseAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +33,11 @@ class MainActivity : AppCompatActivity() {
             setup()
             setDefaults()
             fetchConfig()
+        }
+
+        hello.setOnClickListener {
+            analytics.logTextEvent("hello_button_pushed")
+            showToast("Hello User!")
         }
     }
 
@@ -53,9 +61,9 @@ class MainActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 val updated = task.result
                 Log.d(REMOTE_CONFIG_LOG_TAG, "Config params updated: $updated")
-                Toast.makeText(this@MainActivity, "Fetch and activate succeeded", Toast.LENGTH_SHORT).show()
+                showToast("Fetch and activate succeeded")
             } else {
-                Toast.makeText(this@MainActivity, "Fetch failed", Toast.LENGTH_SHORT).show()
+                showToast("Fetch failed")
             }
             applyRemoteConfigs()
         }
@@ -66,7 +74,18 @@ class MainActivity : AppCompatActivity() {
         welcome.setTextColor(getString(RemoteConfigKey.WELCOME_TEXT_COLOR.name).toColor())
     }
 
+    private fun FirebaseAnalytics.logTextEvent(name: String) {
+        val bundle = Bundle()
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, Random.nextInt().toString())
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, name)
+        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "text")
+        logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
+    }
+
+    private fun showToast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
     private fun String.toColor() = Color.parseColor(if (startsWith("#")) this else "#$this")
+
     private fun Int.toStringColor() = "#" + Integer.toHexString(ContextCompat.getColor(this@MainActivity, this))
 
     @Suppress("DEPRECATION")
