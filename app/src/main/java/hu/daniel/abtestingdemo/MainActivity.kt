@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         welcome.setTextColor(getString(RemoteConfigKey.WELCOME_TEXT_COLOR.name).toColor())
     }
 
-    private fun String.toColor() = Color.parseColor(this)
+    private fun String.toColor() = Color.parseColor(if (startsWith("#")) this else "#$this")
     private fun Int.toStringColor() = "#" + Integer.toHexString(ContextCompat.getColor(this@MainActivity, this))
 
     @Suppress("DEPRECATION")
